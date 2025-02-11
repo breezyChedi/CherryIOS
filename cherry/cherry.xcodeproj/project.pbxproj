@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1A22FE082D4797C600564354 /* CalculatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A22FE072D4797C600564354 /* CalculatorViewController.swift */; };
+		1A3AE5822D5A8FE500F12280 /* DegreeFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A3AE5812D5A8FE500F12280 /* DegreeFilter.swift */; };
 		1AE428C82D501A0A00F52422 /* CircularProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE428C72D501A0A00F52422 /* CircularProgressView.swift */; };
 		1AE428CA2D52381200F52422 /* DegreeDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE428C92D52381100F52422 /* DegreeDetailsViewController.swift */; };
 		1AE6377F2D410B6200B6C405 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AE6377E2D410B6200B6C405 /* AppDelegate.swift */; };
@@ -62,6 +63,7 @@
 
 /* Begin PBXFileReference section */
 		1A22FE072D4797C600564354 /* CalculatorViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorViewController.swift; sourceTree = "<group>"; };
+		1A3AE5812D5A8FE500F12280 /* DegreeFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DegreeFilter.swift; sourceTree = "<group>"; };
 		1AE428C72D501A0A00F52422 /* CircularProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressView.swift; sourceTree = "<group>"; };
 		1AE428C92D52381100F52422 /* DegreeDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DegreeDetailsViewController.swift; sourceTree = "<group>"; };
 		1AE6377B2D410B6200B6C405 /* cherry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = cherry.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -166,6 +168,7 @@
 				1AE637D92D4174CE00B6C405 /* Neo4jConnect.swift */,
 				1A22FE072D4797C600564354 /* CalculatorViewController.swift */,
 				1AE428C72D501A0A00F52422 /* CircularProgressView.swift */,
+				1A3AE5812D5A8FE500F12280 /* DegreeFilter.swift */,
 			);
 			path = cherry;
 			sourceTree = "<group>";
@@ -341,6 +344,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A3AE5822D5A8FE500F12280 /* DegreeFilter.swift in Sources */,
 				1A22FE082D4797C600564354 /* CalculatorViewController.swift in Sources */,
 				1AE637D22D413F3600B6C405 /* SignUpViewController.swift in Sources */,
 				1AE637CE2D413F0800B6C405 /* SignInSignUpViewController.swift in Sources */,
