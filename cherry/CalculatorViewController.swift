@@ -7,6 +7,10 @@
 
 import UIKit
 
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
+
 class CalculatorViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UITextFieldDelegate {
     @IBOutlet weak var circularProgressView: CircularProgressView!
     
@@ -111,6 +115,97 @@ class CalculatorViewController: UIViewController, UIPickerViewDelegate, UIPicker
         options4 = allSubjects
         options5 = allSubjects
         options6 = allSubjects
+    }
+    @IBAction func saveToProfBtn(_ sender: Any) {
+        // First check if user is authenticated
+        guard let currentUser = FirebaseAuth.Auth.auth().currentUser else {
+            // User is not authenticated, navigate to SignIn screen
+            navigateToSignIn()
+            return
+        }
+        
+        // Get the user ID
+        let userId = currentUser.uid
+        
+        // Create dictionary of subjects and marks
+        let subjects: [String: String] = [
+            "subject1": subj1Field.text ?? "",
+            "subject2": subj2Field.text ?? "",
+            "subject3": subj3Field.text ?? "",
+            "subject4": subj4Field.text ?? "",
+            "subject5": subj5Field.text ?? "",
+            "subject6": subj6Field.text ?? "",
+            "subject7": subj7Field.text ?? ""
+        ]
+        
+        let marks: [String: String] = [
+            "mark1": perc1Field.text ?? "0",
+            "mark2": perc2Field.text ?? "0",
+            "mark3": perc3Field.text ?? "0",
+            "mark4": perc4Field.text ?? "0",
+            "mark5": perc5Field.text ?? "0",
+            "mark6": perc6Field.text ?? "0",
+            "mark7": perc7Field.text ?? "0"
+        ]
+        
+        // Calculate APS Score
+        var totalScore = 0
+        func getPointsForMark(_ mark: Int) -> Int {
+            if mark >= 80 { return 7 }
+            else if mark >= 70 { return 6 }
+            else if mark >= 60 { return 5 }
+            else if mark >= 50 { return 4 }
+            else if mark >= 40 { return 3 }
+            else if mark >= 30 { return 2 }
+            else { return 0 }
+        }
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        
+        for textField in firstSixFields {
+            if let text = textField.text, !text.isEmpty {
+                let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                if let number = formatter.number(from: trimmedText)?.intValue {
+                    totalScore += getPointsForMark(number)
+                }
+            }
+        }
+        
+        // Create profile data
+        let profileData: [String: Any] = [
+            "subjects": subjects,
+            "marks": marks,
+            "apsScore": totalScore,
+            "nbtAL": nbtAlField.text ?? "",
+            "nbtQL": nbtQlField.text ?? "",
+            "nbtMat": nbtMatField.text ?? "",
+            "updatedAt": Timestamp()
+        ]
+        
+        // Save to Firestore
+        let db = Firestore.firestore()
+        db.collection("profiles").document(userId).setData(profileData) { [weak self] error in
+            if let error = error {
+                self?.showAlert(message: "Failed to save profile: \(error.localizedDescription)")
+            } else {
+                self?.showAlert(message: "Profile saved successfully!")
+            }
+        }
+    }
+
+    private func navigateToSignIn() {
+        guard let signInVC = storyboard?.instantiateViewController(withIdentifier: "SignInViewController") as? SignInViewController else {
+            showAlert(message: "Could not find SignInViewController")
+            return
+        }
+        navigationController?.pushViewController(signInVC, animated: true)
+    }
+
+    private func showAlert(message: String) {
+        let alert = UIAlertController(title: "Alert", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
     }
     
     @IBAction func calculateAPSBtn(_ sender: Any) {

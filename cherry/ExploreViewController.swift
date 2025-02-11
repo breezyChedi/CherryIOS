@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseFirestore
+import FirebaseAuth
 
 class ExploreViewController: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
     
@@ -65,6 +67,32 @@ class ExploreViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
         let minPoints: Int
         let isOrGroup: Bool
     }
+    
+    
+    @IBAction func eligibilitySwitch(_ sender: UISwitch) {
+        print("Auth? \n", Auth.auth().currentUser)
+        if Auth.auth().currentUser == nil {
+            // User is not signed in, prevent toggling
+            sender.setOn(false, animated: true)
+            
+            // Show alert prompting user to sign in
+            let alert = UIAlertController(title: "Sign In Required",
+                                          message: "You need to sign in or sign up to use this feature.",
+                                          preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            
+            if let viewController = sender.window?.rootViewController {
+                viewController.present(alert, animated: true)
+            }
+        } else {
+            
+            UserDefaults.standard.set(sender.isOn, forKey: "eligibilitySwitchState")
+            // User is authenticated, allow toggling
+            toggleEligibilityFilter(isEnabled: sender.isOn)
+        }
+    }
+
     
     func formatSubjectRequirements(_ requirements: [SubjectRequirement]) -> [FormattedRequirement] {
         var processed: [FormattedRequirement] = []
@@ -150,125 +178,7 @@ class ExploreViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
         }
     
 
-    /*
-    // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-/*
-    func populateScrollView(with universities: [UniversityWithFaculties]) {
-            let cardWidth: CGFloat = 200
-            let cardHeight: CGFloat = 150
-            let cardSpacing: CGFloat = 16
-        var cardViews: [UIView] = []
-            
-            for (index, university) in universities.enumerated() {
-               // print("uni: ", university)
-                // Create a card view for each university
-                let cardView = UIView(frame: CGRect(
-                    x: CGFloat(index) * (cardWidth + cardSpacing),
-                    y: 0,
-                    width: cardWidth,
-                    height: cardHeight
-                ))
-                
-                cardView.backgroundColor = .white
-                       cardView.layer.cornerRadius = 8
-                       cardView.layer.borderWidth = 2
-                       cardView.layer.borderColor = UIColor.black.cgColor
-                cardView.isUserInteractionEnabled = true
-                cardView.tag = index
-                
-                // Add labels or custom content
-                let label = UILabel(frame: CGRect(x: 8, y: 8, width: cardWidth - 16, height: 40))
-                label.text = university.name
-                label.textColor = .black
-                label.textAlignment = .center
-                cardView.addSubview(label)
-                
-                let locationLabel = UILabel(frame: CGRect(x: 8, y: 50, width: cardWidth - 16, height: 40))
-                locationLabel.text = university.location
-                locationLabel.textColor = .black
-                locationLabel.textAlignment = .center
-                cardView.addSubview(locationLabel)
-                
-                let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCardTap(_:)))
-                tapGesture.cancelsTouchesInView = false
-                        cardView.addGestureRecognizer(tapGesture)
-                label.isUserInteractionEnabled = false
-                locationLabel.isUserInteractionEnabled = false
-                
-                tapGesture.require(toFail: scrollView.panGestureRecognizer)
-
-
-                
-                // Add the card to the content view
-                contentView.addSubview(cardView)
-                cardViews.append(cardView)
-                
-            }
-                
-               /* print("Card \(index) Position: \(cardView.frame.origin), Size: \(cardView.frame.size)")
-*/
-            
-            
-    
-    
-            // Update content view width to fit all cards
-        /*
-        let contentWidth = CGFloat(universities.count) * (cardWidth + cardSpacing) - cardSpacing
-        let contentHeight = cardHeight
-        contentView.frame = CGRect(x: 0, y: 0, width: contentWidth, height: cardHeight)
-        /*
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                contentView.widthAnchor.constraint(equalToConstant: contentWidth),
-                contentView.heightAnchor.constraint(equalToConstant: cardHeight)
-            ])
-         */
-        scrollView.contentSize = CGSize(width: contentWidth, height: contentHeight)
-        */
-        
-        let contentWidth = CGFloat(universities.count) * (cardWidth + cardSpacing) // No subtraction here
-        let contentHeight = cardHeight
-
-        contentView.frame = CGRect(x: 0, y: 0, width: contentWidth, height: contentHeight)
-
-        // Update the scroll view content size to match the content view
-        scrollView.contentSize = CGSize(width: contentWidth, height: contentHeight)
-
-        
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        
-        // Activate constraints to pin contentView to the scrollView's contentLayoutGuide
-        NSLayoutConstraint.activate([
-            contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor)
-        ])
-        
-        // Set the width and height of the contentView
-        NSLayoutConstraint.activate([
-            contentView.widthAnchor.constraint(equalToConstant: contentWidth),
-            contentView.heightAnchor.constraint(equalToConstant: cardHeight)
-        ])
-        
-        contentView.setNeedsLayout()
-            contentView.layoutIfNeeded()
-        
-        
-    }
- */
-        /*
-        print("ScrollView Content Size: \(scrollView.contentSize)")
-        print("ContentView Frame: \(contentView.frame)")
-        print("ContentLayoutGuide Width: \(scrollView.contentLayoutGuide.layoutFrame.width)")
-*/
     func populateScrollView(with universities: [UniversityWithFaculties]) {
         let cardWidth: CGFloat = 200
         let cardHeight: CGFloat = 150
@@ -369,7 +279,7 @@ class ExploreViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
 
 
     
-    
+    /*
     func loadDegrees(for facultyId: Int, completion: @escaping ([Degree]) -> Void) {
         fetchDegrees(for: facultyId) { fetchedDegrees in
             DispatchQueue.main.async {
@@ -379,7 +289,79 @@ class ExploreViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
             }
         }
     }
-
+*/
+    /*
+    func loadDegrees(for facultyId: Int, completion: @escaping ([Degree]) -> Void) {
+        fetchDegrees(for: facultyId) { [weak self] fetchedDegrees in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                self.degrees = fetchedDegrees
+                // Check if eligibility filter is enabled
+                if self.eligibilitySwitch.isOn, let uid = Auth.auth().currentUser?.uid {
+                    
+                    // Fetch user profile and apply filtering
+                    let db = Firestore.firestore()
+                    db.collection("profiles").document(uid).getDocument { document, error in
+                        if let profile = document?.data(),
+                           let selectedUniversity = self.selectedUniversity {
+                            
+                            let filteredDegrees = DegreeFilter.filterDegreesByEligibility(
+                                degrees: fetchedDegrees,
+                                profile: profile,
+                                faculty: selectedUniversity.name
+                            )
+                            
+                            self.populateDegreeCards(with: filteredDegrees)
+                            completion(filteredDegrees)
+                        }
+                    }
+                } else {
+                    // If filter is not enabled, show all degrees
+                    self.populateDegreeCards(with: fetchedDegrees)
+                    completion(fetchedDegrees)
+                }
+            }
+        }
+    }
+*/
+    
+    func loadDegrees(for facultyId: Int, completion: @escaping ([Degree]) -> Void) {
+        fetchDegrees(for: facultyId) { [weak self] fetchedDegrees in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                self.degrees = fetchedDegrees
+                
+                // Get the stored switch state from UserDefaults
+                let isEligibilitySwitchOn = UserDefaults.standard.bool(forKey: "eligibilitySwitchState")
+                
+                if isEligibilitySwitchOn, let uid = Auth.auth().currentUser?.uid {
+                    
+                    // Fetch user profile and apply filtering
+                    let db = Firestore.firestore()
+                    db.collection("profiles").document(uid).getDocument { document, error in
+                        if let profile = document?.data(),
+                           let selectedUniversity = self.selectedUniversity {
+                            
+                            let filteredDegrees = DegreeFilter.filterDegreesByEligibility(
+                                degrees: fetchedDegrees,
+                                profile: profile,
+                                faculty: selectedUniversity.name
+                            )
+                            
+                            self.populateDegreeCards(with: filteredDegrees)
+                            completion(filteredDegrees)
+                        }
+                    }
+                } else {
+                    // If filter is not enabled, show all degrees
+                    self.populateDegreeCards(with: fetchedDegrees)
+                    completion(fetchedDegrees)
+                }
+            }
+        }
+    }
 
     
     @objc func handleCardTap(_ sender: UITapGestureRecognizer) {
@@ -422,131 +404,7 @@ class ExploreViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
             }
         })
     }
-    /*
-    func populateDegreeCards(with degrees: [Degree]) {
-            // Remove previous degree cards
-            
-            
-            degreeView.subviews.forEach { $0.removeFromSuperview() }
-
-            let cardWidth: CGFloat = degreeScrollView.frame.width - 32
-            let cardHeight: CGFloat = 270
-            let cardSpacing: CGFloat = 12
-            
-            for (index, degree) in degrees.enumerated() {
-                let formattedReqs = formatSubjectRequirements(degree.subjectRequirements)
-                
-                
-                
-                let cardView = UIView(frame: CGRect(
-                    x: 16,
-                    y: CGFloat(index) * (cardHeight + cardSpacing),
-                    width: cardWidth,
-                    height: cardHeight
-                ))
-                cardView.backgroundColor = .white
-                cardView.layer.cornerRadius = 4
-                cardView.layer.borderWidth = 2
-                cardView.layer.borderColor = UIColor(red: 255/255, green: 192/255, blue: 203/255, alpha: 1.0).cgColor
-                
-                
-/*
-                let label = UILabel(frame: CGRect(x: 16, y: 16, width: cardWidth - 32, height: 40))
-                label.text = degree.name
-                label.textColor = .black
-                label.textAlignment = .center
-                cardView.addSubview(label)
-                */
-                
-                
-                let titleLabel = UILabel(frame: CGRect(x: 16, y: 16, width: cardWidth - 32, height: 40))
-                        titleLabel.text = degree.name
-                        titleLabel.textColor = .black
-                        titleLabel.font = .systemFont(ofSize: 18, weight: .bold)
-                        titleLabel.numberOfLines = 0
-                titleLabel.textAlignment = .center
-                        cardView.addSubview(titleLabel)
-                
-                let apsLabel = UILabel(frame: CGRect(x: 16, y: titleLabel.frame.maxY + 8, width: cardWidth - 32, height: 20))
-                apsLabel.text = "Minimum APS Score: \(degree.pointRequirement ?? 0)"
-                apsLabel.textColor = .black
-                apsLabel.textAlignment = .center
-                apsLabel.font = .systemFont(ofSize: 14)
-                cardView.addSubview(apsLabel)
-                
-                // Subject Requirements label
-                let requirementsLabel = UILabel(frame: CGRect(x: 16, y: apsLabel.frame.maxY + 8, width: cardWidth - 32, height: 20))
-                requirementsLabel.text = "Subject Requirements:"
-                requirementsLabel.textColor = .black
-                requirementsLabel.textAlignment = .center
-                requirementsLabel.font = .systemFont(ofSize: 14)
-                cardView.addSubview(requirementsLabel)
-                
-                var yOffset = requirementsLabel.frame.maxY + 8
-                        
-                        for requirement in formattedReqs {
-                            // Create circular icon container
-                            /*
-                            let iconContainer = UIView(frame: CGRect(x: 16, y: yOffset, width: 24, height: 24))
-                            iconContainer.backgroundColor = UIColor(red: 255/255, green: 192/255, blue: 203/255, alpha: 1.0) // Pink background
-                            iconContainer.layer.cornerRadius = 12
-                            
-                            // Add subject icon (you can customize these based on subject)
-                            let iconLabel = UILabel(frame: iconContainer.bounds)
-                            iconLabel.text = String(requirement.subject.prefix(1)) // First letter of subject
-                            iconLabel.textAlignment = .center
-                            iconLabel.textColor = .white
-                            iconLabel.font = .systemFont(ofSize: 12, weight: .bold)
-                            iconContainer.addSubview(iconLabel)
-                            */
-                            // Subject requirement text
-                            let requirementLabel = UILabel(frame: CGRect(x: 48, y: yOffset, width: cardWidth - 64, height: 24))
-                            requirementLabel.text = "\(requirement.subject): \(requirement.minPoints)"
-                            requirementLabel.textColor = .black
-                            requirementLabel.font = .systemFont(ofSize: 14)
-                            
-                            //cardView.addSubview(iconContainer)
-                            cardView.addSubview(requirementLabel)
-                            
-                            yOffset += 32 // Space for next requirement
-                        }
-                
-                let detailsButton = UIButton(frame: CGRect(x: 16, y: cardHeight - 50, width: cardWidth - 32, height: 40))
-                        detailsButton.setTitle("View Details", for: .normal)
-                        detailsButton.backgroundColor = UIColor(red: 255/255, green: 105/255, blue: 180/255, alpha: 1.0)
-                        detailsButton.setTitleColor(.white, for: .normal)
-                        detailsButton.layer.cornerRadius = 5
-                        
-                detailsButton.addAction(UIAction(handler: { [weak self] _ in
-                    guard let self = self else { return }
-                    
-                    let detailsVC = DegreeDetailsViewController(degree: degree)
-                    
-                    if let navigationController = self.navigationController {
-                        navigationController.pushViewController(detailsVC, animated: true)
-                    } else {
-                        let navController = UINavigationController(rootViewController: detailsVC)
-                        navController.modalPresentationStyle = .fullScreen
-                        self.present(navController, animated: true, completion: nil)
-                    }
-                }), for: .touchUpInside)
-
-
-
-
-
-                        
-                        cardView.addSubview(detailsButton)
-
-                degreeView.addSubview(cardView)
-            }
-
-            let contentHeight = CGFloat(degrees.count) * (cardHeight + cardSpacing)
-            degreeView.frame = CGRect(x: 0, y: 0, width: cardWidth, height: contentHeight)
-            degreeScrollView.contentSize = CGSize(width: cardWidth, height: contentHeight)
-        }
     
-   */
     
     func populateDegreeCards(with degrees: [Degree]) {
         degreeView.subviews.forEach { $0.removeFromSuperview() }
@@ -638,6 +496,8 @@ class ExploreViewController: UIViewController, UIPickerViewDelegate, UIPickerVie
         degreeView.frame = CGRect(x: 0, y: 0, width: cardWidth, height: contentHeight)
         degreeScrollView.contentSize = CGSize(width: cardWidth, height: contentHeight)
     }
+    
+    
 
 }
 
